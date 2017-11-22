@@ -5,8 +5,6 @@ const counter = (state = 0, action) => {
     case 'DECREMENT':
       return state - 1
 
-    // Manage undefined actions
-    // Good practice
     default:
       return state
   }
