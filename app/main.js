@@ -1,47 +1,42 @@
-// import { createStore } from 'redux'
+import { createStore } from 'redux'
 import counter from './reducers/counter'
 
-//const store = createStore(counter)
-// How is store implemented?
-
-const createStore = (reducer) => {
-    let state;
-    let listeners = [];
-
-    const getState = () => state;
-    
-    const dispatch = (action) => {
-        state = reducer(state, action);
-        listeners.forEach(listener => listener())
-    }
-
-    const subscribe = (listener) => {
-        listeners.push(listener)
-        // When you can subscribe, it returns
-        // a function, if you call that function
-        // it automatically unsubscribes itself
-        return () => {
-            listeners = listeners.filter()
-        }
-    }
-
-    // To populate the store, dispatch
-    // a dummy action, this will initialize
-    // state to its initial value
-    dispatch({});
-
-    return {getState, dispatch, subscribe}
-}
+// Here comes REACT, Why use react!? VirtualDom Diffing!
+import React from 'react'
+import ReactDOM from 'react-dom'
 
 const store = createStore(counter)
 
+const Counter = ({
+    value,
+    onIncrement,
+    onDecrement
+}) => (             // ES6 syntax if return is the only statement
+    <div>
+        <h1>{value}</h1>
+        <button onClick={onIncrement}>+</button>
+        <button onClick={onDecrement}>-</button>
+    </div>
+)
+
 const render = () => {
-    document.body.innerText = store.getState();
+    ReactDOM.render(
+        <Counter
+            value={store.getState()}   // return a function
+            onIncrement={  //return a function, which returns the callback
+                () => {
+                    store.dispatch({type: 'INCREMENT'})
+                }
+            }
+            onDecrement={
+                () => {
+                    store.dispatch({type: 'DECREMENT'})
+                }
+            }
+        />,
+        document.getElementById('root')
+    )
 }
 
 store.subscribe(render);
 render();
-
-document.addEventListener('click', () => {
-    store.dispatch({ type: "INCREMENT"})
-})
