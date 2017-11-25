@@ -4,7 +4,7 @@ import {Map, List, fromJS} from 'immutable'
 describe('addTodo', () => {
     const stateBefore = List([]);
     // Action need not be immutable, but why not?!
-    const action = Map({{
+    const action = Map({
         type: 'ADD_TODO',
         id: 0,
         text: 'Learn Redux'
