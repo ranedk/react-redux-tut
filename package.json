@@ -2,7 +2,7 @@
   "name": "coverfox-react-redux-jest-tutorial",
   "version": "1.0.0",
   "description": "a project to learn react, redux, jest, webpack and cool concepts",
-  "main": "app/main.js",
+  "main": "todo/main.js",
   "scripts": {
     "prepare": "npm test && npm run build",
     "test": "jest",
@@ -10,7 +10,7 @@
     "test:cov": "npm test -- --coverage",
     "test:watch": "npm test -- --watch",
     "build": "webpack",
-    "start": "webpack-dev-server --devtool eval --progress --hot --content-base app",
+    "start": "webpack-dev-server --devtool eval --progress --hot --content-base todo",
     "deploy": "NODE_ENV=production webpack --config webpack.production.config.js",
     "deploy-windows": "SET NODE_ENV=production & webpack --config webpack.production.config.js",
     "validate": "npm ls"
@@ -55,8 +55,8 @@
   "jest": {
     "testRegex": "(/test/.*\\.spec.js)$",
     "moduleFileExtensions": ["js", "jsx"],
-    "moduleDirectories": ["node_modules", "app"],
-    "modulePaths": ["./app/"]
+    "moduleDirectories": ["node_modules", "todo"],
+    "modulePaths": ["./todo/"]
   },
   "keywords": [
     "es6",

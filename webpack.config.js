@@ -7,10 +7,10 @@ module.exports = {
     historyApiFallback: true,
     hot: true,
     inline: true,
-    contentBase: './app',
+    contentBase: './todo',
     port: 8080
   },
-  entry: path.resolve(__dirname, 'app/main.js'),
+  entry: path.resolve(__dirname, 'todo/main.js'),
   output: {
     path: path.resolve(__dirname, 'build'),
     publicPath: '/',
@@ -18,8 +18,8 @@ module.exports = {
   },
   module: {
     loaders: [
-      { test: /\.css$/, include: path.resolve(__dirname, 'app'), loader: 'style-loader!css-loader' },
-      { test: /\.js[x]?$/, include: path.resolve(__dirname, 'app'), exclude: /node_modules/, loader: 'babel-loader' }
+      { test: /\.css$/, include: path.resolve(__dirname, 'todo'), loader: 'style-loader!css-loader' },
+      { test: /\.js[x]?$/, include: path.resolve(__dirname, 'todo'), exclude: /node_modules/, loader: 'babel-loader' }
     ]
   },
   resolve: {
