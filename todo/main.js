@@ -8,10 +8,52 @@ import ReactDOM from 'react-dom'
 const initialState = Map();
 const store = createStore(todoApp, initialState)
 
+const FilterLink = ({
+    filter,
+    children
+}) => {
+    return (
+        <a href='#'
+            onClick={ e => {
+                e.preventDefault();
+                store.dispatch({
+                    type: 'SET_VISIBILITY_FILTER',
+                    filter: filter
+                })
+            }}
+        > {children}
+        </a>
+    )
+}
+
+const getVisibleTodos = (
+    todos,
+    filter
+) => {
+    switch(filter) {
+        case 'SHOW_ALL':
+            return todos;
+        case 'SHOW_ACTIVE':
+            return todos.filter(
+                t => !t.get('completed')
+            );
+        case 'SHOW_COMPLETED':
+            return todos.filter(
+                t => t.get('completed')
+            );
+        default:
+            return todos;
+    }
+}
+
 let nextId = 0
 // Todo React component: We will clean this up soon
 class TodoApp extends React.Component {
     render() {
+        const visibleTodos = getVisibleTodos(
+            this.props.todos,
+            this.props.visibilityFilter
+        );
         return (
             <div>
                 <input ref={node => {
@@ -29,7 +71,7 @@ class TodoApp extends React.Component {
                 >Add todo
                 </button>
                 <ul>
-                    {this.props.todos.map(todo =>
+                    {visibleTodos.map(todo =>
                         <li
                             key={todo.get('id')}
                             onClick={ () => {
@@ -47,6 +89,17 @@ class TodoApp extends React.Component {
                         </li>
                     )}
                 </ul>
+                <p> Show: &nbsp;
+                    <FilterLink filter='SHOW_ALL'>
+                        All
+                    </FilterLink> |
+                    <FilterLink filter='SHOW_ACTIVE'>
+                        Active
+                    </FilterLink> |
+                    <FilterLink filter='SHOW_COMPLETED'>
+                        Completed
+                    </FilterLink>
+                </p>
             </div>
         )
     }
@@ -56,6 +109,7 @@ const render = () => {
     ReactDOM.render(
         <TodoApp
         todos={store.getState().get('todos')}
+        visibilityFilter={store.getState().get('visibilityFilter')}
         />,
         document.getElementById('root')
     )
