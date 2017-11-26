@@ -8,48 +8,46 @@ import ReactDOM from 'react-dom'
 const initialState = Map();
 const store = createStore(todoApp, initialState)
 
-console.log("Initial State")
-console.log(store.getState().toString());
-console.log("----------------")
+let nextId = 0
+// Todo React component: We will clean this up soon
+class TodoApp extends React.Component {
+    render() {
+        return (
+            <div>
+                <input ref={node => {
+                    this.input = node;
+                }}/>
+                <button
+                    onClick={() => {
+                        store.dispatch({
+                            type: 'ADD_TODO',
+                            text: this.input.value,
+                            id: nextId++
+                        });
+                        this.input.value = '';
+                    }}
+                >Add todo
+                </button>
+                <ul>
+                    {this.props.todos.map(todo =>
+                        <li key={todo.get('id')}>
+                            {todo.get('text')}
+                        </li>
+                    )}
+                </ul>
+            </div>
+        )
+    }
+}
 
-console.log("Dispatching ADD_TODO");
-store.dispatch({
-    type: 'ADD_TODO',
-    id: 0,
-    text: 'Learn redux'
-})
+const render = () => {
+    ReactDOM.render(
+        <TodoApp
+        todos={store.getState().get('todos')}
+        />,
+        document.getElementById('root')
+    )
+};
 
-console.log("New State")
-console.log(store.getState().toString());
-console.log("----------------")
-
-console.log("Dispatching ADD_TODO");
-store.dispatch({
-    type: 'ADD_TODO',
-    id: 1,
-    text: 'Learn Python'
-})
-
-console.log("New State")
-console.log(store.getState().toString());
-console.log("----------------")
-
-console.log("Dispatching TOGGLE_TODO");
-store.dispatch({
-    type: 'TOGGLE_TODO',
-    id: 1,
-})
-
-console.log("New State")
-console.log(store.getState().toString());
-console.log("----------------")
-
-console.log("Dispatching SET_VISIBILITY_FILTER");
-store.dispatch({
-    type: 'SET_VISIBILITY_FILTER',
-    filter: 'COMPLETED',
-})
-
-console.log("New State")
-console.log(store.getState().toString());
-console.log("----------------")
+store.subscribe(render);
+render();
