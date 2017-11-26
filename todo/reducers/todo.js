@@ -1,4 +1,5 @@
 import { Map, List, isImmutable} from 'immutable'
+import { combineReducers } from 'redux-immutable'
 
 const todo = (state, action) => {
     switch(action.type) {
@@ -45,20 +46,9 @@ const visibilityFilter = (state='SHOW_ALL', action) => {
     }
 }
 
-// Instead of changing my app, I can combine
-// independent reducers using a basic reducer composition
-// Pretty easy to understand
-const todoApp = (state = Map({}), action) => {
-    // Initial action is dispatched by React called "@@INIT"
-    // which is not supposed to be handled.
-    return Map({
-        todos: todos(
-            state.get('todos'), action
-        ),
-        visibilityFilter: visibilityFilter(
-            state.get('visibilityFilter'), action
-        )
-    })
-}
+const todoApp = combineReducers({
+    todos: todos,
+    visibilityFilter: visibilityFilter
+}) 
 
 export default todoApp

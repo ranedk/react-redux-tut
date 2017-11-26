@@ -5,7 +5,8 @@ import {List, Map} from 'immutable'
 import React from 'react'
 import ReactDOM from 'react-dom'
 
-const store = createStore(todoApp)
+const initialState = Map();
+const store = createStore(todoApp, initialState)
 
 console.log("Initial State")
 console.log(store.getState().toString());
