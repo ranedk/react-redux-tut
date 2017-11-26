@@ -30,6 +30,45 @@ const FilterLink = ({
     )
 }
 
+// We need to separate the Single Todo as a component
+// such that it has NO logic and only knows how to render
+// what is passed to it: Presentation layer
+const Todo = ({
+    onClick,
+    completed,
+    text
+}) => (
+        <li
+            onClick={onClick}
+            style={{
+                textDecoration: completed ?
+                    'line-through' : 'none'
+            }}
+        >
+            {text}
+        </li>
+)
+
+// Now TodoList has no behavior in it
+const TodoList = ({
+    todos,
+    onTodoClick
+}) => (
+    <ul>
+        { todos.map(todo =>
+            <Todo
+                key={todo.get('id')}
+                text={todo.get('text')}
+                completed={todo.get('completed')}
+                onClick={() => onTodoClick(todo.get('id'))}
+            />
+            // What is the difference between
+            // onClick={() => onTodoClick(todo.get('id'))}  and
+            // onClick={onTodoClick(todo.get('id')}   !watch out
+        )}
+    </ul>
+)
+
 const getVisibleTodos = (
     todos,
     filter
@@ -38,12 +77,12 @@ const getVisibleTodos = (
         case 'SHOW_ALL':
             return todos;
         case 'SHOW_ACTIVE':
-            return todos.filter(
-                t => !t.get('completed')
+            return todos.filter( t => 
+                !t.get('completed')
             );
         case 'SHOW_COMPLETED':
-            return todos.filter(
-                t => t.get('completed')
+            return todos.filter( t =>
+                t.get('completed')
             );
         default:
             return todos;
@@ -51,7 +90,6 @@ const getVisibleTodos = (
 }
 
 let nextId = 0
-// Todo React component: We will clean this up soon
 class TodoApp extends React.Component {
     render() {
         // ES6 goodness
@@ -82,25 +120,16 @@ class TodoApp extends React.Component {
                     }}
                 >Add todo
                 </button>
-                <ul>
-                    {visibleTodos.map(todo =>
-                        <li
-                            key={todo.get('id')}
-                            onClick={ () => {
-                                store.dispatch({
-                                    type: 'TOGGLE_TODO',
-                                    id: todo.get('id')
-                                })
-                            }}
-                            style={{
-                                textDecoration: todo.get('completed') ?
-                                    'line-through' : 'none'
-                            }}
-                        >
-                            {todo.get('text')}
-                        </li>
-                    )}
-                </ul>
+                <TodoList
+                    todos={visibleTodos}
+                    onTodoClick={ id => {
+                            store.dispatch({
+                                type: 'TOGGLE_TODO',
+                                id: id
+                            })
+                        }
+                    }
+                />
                 <p> Show: &nbsp;
                     <FilterLink
                         filter='SHOW_ALL'
