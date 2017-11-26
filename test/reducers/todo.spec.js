@@ -1,14 +1,15 @@
-import todos from 'reducers/todo'
+import {todos} from 'reducers/todo'
 import {Map, List, fromJS} from 'immutable'
 
 describe('addTodo', () => {
     const stateBefore = List([]);
-    // Action need not be immutable, but why not?!
-    const action = Map({
+    // Action need not be immutable
+    // React says, actions must be plain objects
+    const action = {
         type: 'ADD_TODO',
         id: 0,
         text: 'Learn Redux'
-    })
+    }
     const stateAfter = fromJS(
         [
             {
@@ -38,10 +39,10 @@ describe('toggleTodo', () => {
         }
 
     ])
-    const action = Map({
+    const action = {
         type: 'TOGGLE_TODO',
         id: 1,
-    })
+    }
     const stateAfter = fromJS([
         {
             id: 0,
