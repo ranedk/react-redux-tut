@@ -3,35 +3,22 @@ import todoApp from './reducers/todo'
 import {List, Map} from 'immutable'
 
 import React from 'react'
+import {Component} from 'react'
 import ReactDOM from 'react-dom'
 
 const initialState = Map();
 const store = createStore(todoApp, initialState)
 
-const Footer = ({visibilityFilter, onFilterClick}) => {
+// Footer was simply passing the props down, so we should
+// get rid of the props and create it prop free.
+// Also, all of them had the same code repeated for onClick and
+//, currentFilter, so we get rid of those too
+const Footer = () => {
     return (
         <p> Show: &nbsp;
-            <FilterLink
-                filter='SHOW_ALL'
-                currentFilter={visibilityFilter}
-                onFilterClick={onFilterClick}
-            >
-                All
-            </FilterLink> |
-            <FilterLink
-                filter='SHOW_ACTIVE'
-                currentFilter={visibilityFilter}
-                onFilterClick={onFilterClick}
-            >
-                Active
-            </FilterLink> |
-            <FilterLink
-                filter='SHOW_COMPLETED'
-                currentFilter={visibilityFilter}
-                onFilterClick={onFilterClick}
-            >
-                Completed
-            </FilterLink>
+            <FilterLink filter='SHOW_ALL' > All </FilterLink> |
+            <FilterLink filter='SHOW_ACTIVE' > Active </FilterLink> |
+            <FilterLink filter='SHOW_COMPLETED' > Completed </FilterLink>
         </p>
     )
 }
@@ -56,24 +43,60 @@ const AddTodo = ({
     )
 }
 
-const FilterLink = ({
-    filter,
-    currentFilter,
-    onFilterClick,
-    children        // React stuff for inner html
+const Link = ({
+    active,
+    onLinkClick,
+    children
 }) => {
-    if(filter === currentFilter) {
+    if(active) {
         return <span>{children}</span>
     }
     return (
         <a href='#'
             onClick={ e => {
                 e.preventDefault();
-                onFilterClick(filter);
+                onLinkClick();
             }}
         > {children}
         </a>
     )
+}
+
+// New FilterLink component takes visibilityFilter from the state
+// The onLinkClick is also the same uniform all Link components
+class FilterLink extends Component {
+
+    // If the parent component doesn't update on store change
+    // This component will render old values, so we need to
+    // update this component when store is updated.
+    componentDidMount() {
+        this.unsubscribe = store.subscribe(() => 
+            this.forceUpdate()
+        )
+    }
+
+    componentWillUnmount() {
+        this.unsubscribe()
+    }
+    
+    render() {
+        const props = this.props;
+        const state = store.getState()
+
+        return (
+            <Link
+                active={ props.filter == state.get('visibilityFilter') }
+                onLinkClick={ () =>
+                    store.dispatch({
+                        type: 'SET_VISIBILITY_FILTER',
+                        filter: props.filter
+                    })
+                }
+            >
+            {props.children}
+            </Link>
+        )    
+    }
 }
 
 // We need to separate the Single Todo as a component
@@ -171,15 +194,7 @@ class TodoApp extends React.Component {
                         }
                     }
                 />
-                <Footer
-                    visibilityFilter={visibilityFilter}
-                    onFilterClick={(filter) => {
-                        store.dispatch({
-                            type: 'SET_VISIBILITY_FILTER',
-                            filter: filter
-                        })
-                    }}
-                />
+                <Footer />
             </div>
         )
     }
