@@ -5,15 +5,9 @@ import {List, Map} from 'immutable'
 import React from 'react'
 import {Component} from 'react'
 import ReactDOM from 'react-dom'
+import PropTypes from 'prop-types';
 
 const initialState = Map();
-const store = createStore(todoApp, initialState)
-// I dont like store as a global variable, so the only way to 
-// do this is by doing a very DIRTY thing.
-// I will create the store in the top level component
-// and pass it to its childrens, who will pass it to their children
-// Hence, every component will have to take store as a prop
-// Instead of doing this, there has to be a better way!
 
 const Footer = () => {
     return (
@@ -25,11 +19,11 @@ const Footer = () => {
     )
 }
 
-// This looks like the older code where onAddTodoClick was passed
-// as a prop, but since the only behavior of AddTodo is to dispatch
-// 'ADD_TODO', we should have it as a part of the component itself! 
-const AddTodo = () => {
+// AddTodo is a function component, it gets a second parameter
+// as context, the first one being props
+const AddTodo = (props, context) => {
     let input;
+    const store = context.store;
     return (
         <div>
             <input ref={node => {
@@ -48,6 +42,11 @@ const AddTodo = () => {
             </button>
         </div>
     )
+}
+// This says that this component will use 'store' in the context
+// pass from the provider
+AddTodo.contextTypes = {
+    store: PropTypes.object
 }
 
 const Link = ({
@@ -72,6 +71,7 @@ const Link = ({
 class FilterLink extends Component {
 
     componentDidMount() {
+        const store = this.context.store;
         this.unsubscribe = store.subscribe(() => 
             this.forceUpdate()
         )
@@ -83,6 +83,7 @@ class FilterLink extends Component {
     
     render() {
         const props = this.props;
+        const store = this.context.store;
         const state = store.getState()
 
         return (
@@ -99,6 +100,9 @@ class FilterLink extends Component {
             </Link>
         )    
     }
+}
+FilterLink.contextTypes = {
+    store: PropTypes.object
 }
 
 const Todo = ({
@@ -129,9 +133,6 @@ const TodoList = ({
                 completed={todo.get('completed')}
                 onClick={() => onTodoClick(todo.get('id'))}
             />
-            // What is the difference between
-            // onClick={() => onTodoClick(todo.get('id'))}  and
-            // onClick={onTodoClick(todo.get('id')}   !watch out
         )}
     </ul>
 )
@@ -156,14 +157,10 @@ const getVisibleTodos = (
     }
 }
 
-// The Todo component was only passing stuff to bottom components
-// We should get rid of that too
 class VisibleTodoList extends Component {
 
-    // If the parent component doesn't update on store change
-    // This component will render old values, so we need to
-    // update this component when store is updated.
     componentDidMount() {
+        const store = this.context.store;
         this.unsubscribe = store.subscribe(() => 
             this.forceUpdate()
         )
@@ -175,6 +172,7 @@ class VisibleTodoList extends Component {
     
     render () {
         const props = this.props;
+        const store = this.context.store;
         const state = store.getState();
         return (
             <TodoList
@@ -195,11 +193,12 @@ class VisibleTodoList extends Component {
         )
     }
 }
+VisibleTodoList.contextTypes = {
+    store: PropTypes.object
+}
 
 let nextId = 0
 
-// The TodoApp is not passing any state to children components
-// So we can make it simple
 const TodoApp = () => (
     <div>
         <AddTodo />
@@ -208,14 +207,32 @@ const TodoApp = () => (
     </div>
 );
 
-// We were calling render on store.subscribe, however now since
-// the components inside it are forceUpdating themselves on
-// store change, we dont need to have this the whole store
-// subscription stuff
+
+// Lets create a Provider, which provides all children components
+// which context from the top.
+// We create a basic component, which simply renders all children
+// It implements a getChildContext, which helps pass the context
+// to all its children.
+class Provider extends Component {
+    getChildContext() {
+        return {
+            store: this.props.store
+        }
+    }
+    render() {
+        return this.props.children;
+    }
+}
+// It needs to define the childContentTypes to work! Dont ask why :(
+// Hunch is it tells the children to take 'store' key from the passed
+// context
+Provider.childContextTypes = {
+    store: PropTypes.object
+}
+
 ReactDOM.render(
-    <TodoApp
-    todos={store.getState().get('todos')}
-    visibilityFilter={store.getState().get('visibilityFilter')}
-    />,
+    <Provider store={createStore(todoApp, initialState)}>
+        <TodoApp/>
+    </Provider>,
     document.getElementById('root')
 )
