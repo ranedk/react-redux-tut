@@ -8,6 +8,12 @@ import ReactDOM from 'react-dom'
 
 const initialState = Map();
 const store = createStore(todoApp, initialState)
+// I dont like store as a global variable, so the only way to 
+// do this is by doing a very DIRTY thing.
+// I will create the store in the top level component
+// and pass it to its childrens, who will pass it to their children
+// Hence, every component will have to take store as a prop
+// Instead of doing this, there has to be a better way!
 
 const Footer = () => {
     return (
