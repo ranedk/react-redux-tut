@@ -7,18 +7,10 @@ import {Component} from 'react'
 import ReactDOM from 'react-dom'
 import PropTypes from 'prop-types'
 import {connect} from 'react-redux'
-
-// This existed already!! So much typing Saved
 import {Provider} from 'react-redux'
 
-// Can you see a pattern here?!:
-
-// Components need to re-render when the store state changes,
-// they need to unsubscribe from the store when they mount and 
-// they take the current state of the store and use it to render
-// the presentational components with some props that they
-// calculate from the state, and they also need to specify
-// the contexttypes to get this store from the context.
+// Moved component to its own file
+import VisibleTodoList from './components/VisibleTodoList'
 
 const initialState = Map();
 
@@ -32,11 +24,12 @@ const Footer = () => {
     )
 }
 
-// AddTodo is a function component, it gets a second parameter
-// as context, the first one being props
-const AddTodo = (props, context) => {
+// AddTodo only uses dispatch
+// So we define it using 'let' and override it
+// with connect later
+let nextId = 0
+let AddTodo = ({dispatch}) => {
     let input;
-    const store = context.store;
     return (
         <div>
             <input ref={node => {
@@ -44,7 +37,7 @@ const AddTodo = (props, context) => {
             }} />
             <button
                 onClick={() => {
-                    store.dispatch({
+                    dispatch({
                         type: 'ADD_TODO',
                         text: input.value,
                         id: nextId++
@@ -56,11 +49,25 @@ const AddTodo = (props, context) => {
         </div>
     )
 }
-// This says that this component will use 'store' in the context
-// pass from the provider
-AddTodo.contextTypes = {
-    store: PropTypes.object
-}
+/*
+AddTodo = connect(
+    state => {
+        return {}  // connect will not pass any state
+    },
+    dispatch => {
+        return {dispatch} // connect will pass dispatch as is
+    }
+)(AddTodo)  // Wrap the old AddTodo component to create new
+
+// I can do the above thing using a shortcut
+AddTodo = connect(
+    null,
+    dispatch => {return {dispatch}} 
+){AddTodo}
+*/
+// I can do the above with a further shortcut
+AddTodo = connect()(AddTodo);
+// This doesn't subscribe to the store and injects dispatch
 
 const Link = ({
     active,
@@ -118,87 +125,6 @@ FilterLink.contextTypes = {
     store: PropTypes.object
 }
 
-const Todo = ({
-    onClick,
-    completed,
-    text
-}) => (
-        <li
-            onClick={onClick}
-            style={{
-                textDecoration: completed ?
-                    'line-through' : 'none'
-            }}
-        >
-            {text}
-        </li>
-)
-
-const TodoList = ({
-    todos,
-    onTodoClick
-}) => (
-    <ul>
-        { todos.map(todo =>
-            <Todo
-                key={todo.get('id')}
-                text={todo.get('text')}
-                completed={todo.get('completed')}
-                onClick={() => onTodoClick(todo.get('id'))}
-            />
-        )}
-    </ul>
-)
-
-const getVisibleTodos = (
-    todos,
-    filter
-) => {
-    switch(filter) {
-        case 'SHOW_ALL':
-            return todos;
-        case 'SHOW_ACTIVE':
-            return todos.filter( t => 
-                !t.get('completed')
-            );
-        case 'SHOW_COMPLETED':
-            return todos.filter( t =>
-                t.get('completed')
-            );
-        default:
-            return todos;
-    }
-}
-
-/******** VisibleTodoList Component Simplified *************/
-const mapStateToProps = (state) => {
-    return {
-        todos: getVisibleTodos(
-            state.get('todos'),
-            state.get('visibilityFilter')
-        )
-    }
-}
-
-const mapDispathToProps = (dispatch) => {
-    return {
-        onTodoClick: (id) => {
-            dispatch({
-                type: 'TOGGLE_TODO',
-                id: id
-            })
-        }
-    }
-}
-
-const VisibleTodoList = connect(
-    mapStateToProps,
-    mapDispathToProps
-)(TodoList);            // TodoList must be PRESENTATIONAL only
-
-/**************************************************** */
-
-let nextId = 0
 
 const TodoApp = () => (
     <div>
