@@ -5,7 +5,20 @@ import {List, Map} from 'immutable'
 import React from 'react'
 import {Component} from 'react'
 import ReactDOM from 'react-dom'
-import PropTypes from 'prop-types';
+import PropTypes from 'prop-types'
+import {connect} from 'react-redux'
+
+// This existed already!! So much typing Saved
+import {Provider} from 'react-redux'
+
+// Can you see a pattern here?!:
+
+// Components need to re-render when the store state changes,
+// they need to unsubscribe from the store when they mount and 
+// they take the current state of the store and use it to render
+// the presentational components with some props that they
+// calculate from the state, and they also need to specify
+// the contexttypes to get this store from the context.
 
 const initialState = Map();
 
@@ -157,45 +170,33 @@ const getVisibleTodos = (
     }
 }
 
-class VisibleTodoList extends Component {
-
-    componentDidMount() {
-        const store = this.context.store;
-        this.unsubscribe = store.subscribe(() => 
-            this.forceUpdate()
-        )
-    }
-
-    componentWillUnmount() {
-        this.unsubscribe()
-    }
-    
-    render () {
-        const props = this.props;
-        const store = this.context.store;
-        const state = store.getState();
-        return (
-            <TodoList
-                todos={
-                    getVisibleTodos(
-                        state.get('todos'),
-                        state.get('visibilityFilter')
-                    )
-                }
-                onTodoClick={id => {
-                    store.dispatch({
-                        type: 'TOGGLE_TODO',
-                        id: id
-                    })
-                }
-                }
-            />
+/******** VisibleTodoList Component Simplified *************/
+const mapStateToProps = (state) => {
+    return {
+        todos: getVisibleTodos(
+            state.get('todos'),
+            state.get('visibilityFilter')
         )
     }
 }
-VisibleTodoList.contextTypes = {
-    store: PropTypes.object
+
+const mapDispathToProps = (dispatch) => {
+    return {
+        onTodoClick: (id) => {
+            dispatch({
+                type: 'TOGGLE_TODO',
+                id: id
+            })
+        }
+    }
 }
+
+const VisibleTodoList = connect(
+    mapStateToProps,
+    mapDispathToProps
+)(TodoList);            // TodoList must be PRESENTATIONAL only
+
+/**************************************************** */
 
 let nextId = 0
 
@@ -206,29 +207,6 @@ const TodoApp = () => (
         <Footer />
     </div>
 );
-
-
-// Lets create a Provider, which provides all children components
-// which context from the top.
-// We create a basic component, which simply renders all children
-// It implements a getChildContext, which helps pass the context
-// to all its children.
-class Provider extends Component {
-    getChildContext() {
-        return {
-            store: this.props.store
-        }
-    }
-    render() {
-        return this.props.children;
-    }
-}
-// It needs to define the childContentTypes to work! Dont ask why :(
-// Hunch is it tells the children to take 'store' key from the passed
-// context
-Provider.childContextTypes = {
-    store: PropTypes.object
-}
 
 ReactDOM.render(
     <Provider store={createStore(todoApp, initialState)}>
