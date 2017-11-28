@@ -9,10 +9,6 @@ import ReactDOM from 'react-dom'
 const initialState = Map();
 const store = createStore(todoApp, initialState)
 
-// Footer was simply passing the props down, so we should
-// get rid of the props and create it prop free.
-// Also, all of them had the same code repeated for onClick and
-//, currentFilter, so we get rid of those too
 const Footer = () => {
     return (
         <p> Show: &nbsp;
@@ -23,9 +19,10 @@ const Footer = () => {
     )
 }
 
-const AddTodo = ({
-    onAddClick
-}) => {
+// This looks like the older code where onAddTodoClick was passed
+// as a prop, but since the only behavior of AddTodo is to dispatch
+// 'ADD_TODO', we should have it as a part of the component itself! 
+const AddTodo = () => {
     let input;
     return (
         <div>
@@ -34,7 +31,11 @@ const AddTodo = ({
             }} />
             <button
                 onClick={() => {
-                    onAddClick(input.value);
+                    store.dispatch({
+                        type: 'ADD_TODO',
+                        text: input.value,
+                        id: nextId++
+                    });
                     input.value = '';
                 }}
             >Add todo
@@ -62,13 +63,8 @@ const Link = ({
     )
 }
 
-// New FilterLink component takes visibilityFilter from the state
-// The onLinkClick is also the same uniform all Link components
 class FilterLink extends Component {
 
-    // If the parent component doesn't update on store change
-    // This component will render old values, so we need to
-    // update this component when store is updated.
     componentDidMount() {
         this.unsubscribe = store.subscribe(() => 
             this.forceUpdate()
@@ -99,9 +95,6 @@ class FilterLink extends Component {
     }
 }
 
-// We need to separate the Single Todo as a component
-// such that it has NO logic and only knows how to render
-// what is passed to it: Presentation layer
 const Todo = ({
     onClick,
     completed,
@@ -118,7 +111,6 @@ const Todo = ({
         </li>
 )
 
-// Now TodoList has no behavior in it
 const TodoList = ({
     todos,
     onTodoClick
@@ -158,57 +150,66 @@ const getVisibleTodos = (
     }
 }
 
-let nextId = 0
-class TodoApp extends React.Component {
-    render() {
-        // ES6 goodness
-        // Easy shortcut to pull attributes
-        // from an object
-        const {
-            todos,
-            visibilityFilter
-        } = this.props
+// The Todo component was only passing stuff to bottom components
+// We should get rid of that too
+class VisibleTodoList extends Component {
 
-        const visibleTodos = getVisibleTodos(
-            todos,
-            visibilityFilter
-        );
+    // If the parent component doesn't update on store change
+    // This component will render old values, so we need to
+    // update this component when store is updated.
+    componentDidMount() {
+        this.unsubscribe = store.subscribe(() => 
+            this.forceUpdate()
+        )
+    }
+
+    componentWillUnmount() {
+        this.unsubscribe()
+    }
+    
+    render () {
+        const props = this.props;
+        const state = store.getState();
         return (
-            <div>
-                <AddTodo
-                    onAddClick={text => {
-                        store.dispatch({
-                            type: 'ADD_TODO',
-                            text: text,
-                            id: nextId++
-                        });
-                    }}
-                />
-                <TodoList
-                    todos={visibleTodos}
-                    onTodoClick={ id => {
-                            store.dispatch({
-                                type: 'TOGGLE_TODO',
-                                id: id
-                            })
-                        }
-                    }
-                />
-                <Footer />
-            </div>
+            <TodoList
+                todos={
+                    getVisibleTodos(
+                        state.get('todos'),
+                        state.get('visibilityFilter')
+                    )
+                }
+                onTodoClick={id => {
+                    store.dispatch({
+                        type: 'TOGGLE_TODO',
+                        id: id
+                    })
+                }
+                }
+            />
         )
     }
 }
 
-const render = () => {
-    ReactDOM.render(
-        <TodoApp
-        todos={store.getState().get('todos')}
-        visibilityFilter={store.getState().get('visibilityFilter')}
-        />,
-        document.getElementById('root')
-    )
-};
+let nextId = 0
 
-store.subscribe(render);
-render();
+// The TodoApp is not passing any state to children components
+// So we can make it simple
+const TodoApp = () => (
+    <div>
+        <AddTodo />
+        <VisibleTodoList />
+        <Footer />
+    </div>
+);
+
+// We were calling render on store.subscribe, however now since
+// the components inside it are forceUpdating themselves on
+// store change, we dont need to have this the whole store
+// subscription stuff
+ReactDOM.render(
+    <TodoApp
+    todos={store.getState().get('todos')}
+    visibilityFilter={store.getState().get('visibilityFilter')}
+    />,
+    document.getElementById('root')
+)
