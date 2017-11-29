@@ -69,6 +69,7 @@ AddTodo = connect(
 AddTodo = connect()(AddTodo);
 // This doesn't subscribe to the store and injects dispatch
 
+/**************** FilterLink component rearchiteture ********/
 const Link = ({
     active,
     onLinkClick,
@@ -88,42 +89,33 @@ const Link = ({
     )
 }
 
-class FilterLink extends Component {
-
-    componentDidMount() {
-        const store = this.context.store;
-        this.unsubscribe = store.subscribe(() => 
-            this.forceUpdate()
-        )
+const mapStateToLinkProps = (
+    state,
+    ownProps        // Container components props
+) => {
+    return {
+        active: state.get('visibilityFilter') === ownProps.filter
     }
+};
 
-    componentWillUnmount() {
-        this.unsubscribe()
-    }
-    
-    render() {
-        const props = this.props;
-        const store = this.context.store;
-        const state = store.getState()
-
-        return (
-            <Link
-                active={ props.filter == state.get('visibilityFilter') }
-                onLinkClick={ () =>
-                    store.dispatch({
-                        type: 'SET_VISIBILITY_FILTER',
-                        filter: props.filter
-                    })
-                }
-            >
-            {props.children}
-            </Link>
-        )    
+const mapDispatchToLinkProps = (
+    dispatch,
+    ownProps
+) => {
+    return {
+        onLinkClick: () => {
+            dispatch({
+                type: 'SET_VISIBILITY_FILTER',
+                filter: ownProps.filter
+            })
+        }
     }
 }
-FilterLink.contextTypes = {
-    store: PropTypes.object
-}
+
+const FilterLink = connect(
+    mapStateToLinkProps,
+    mapDispatchToLinkProps
+)(Link)
 
 
 const TodoApp = () => (
