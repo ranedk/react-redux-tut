@@ -55,6 +55,13 @@ const getVisibleTodos = (
     }
 }
 
+const toggleTodo = (id) => {
+    return {
+        type: 'TOGGLE_TODO',
+        id: id
+    }
+}
+
 const mapStateToProps = (state) => {
     return {
         todos: getVisibleTodos(
@@ -67,10 +74,7 @@ const mapStateToProps = (state) => {
 const mapDispathToProps = (dispatch) => {
     return {
         onTodoClick: (id) => {
-            dispatch({
-                type: 'TOGGLE_TODO',
-                id: id
-            })
+            dispatch(toggleTodo(id));
         }
     }
 }

@@ -8,8 +8,6 @@ import ReactDOM from 'react-dom'
 import PropTypes from 'prop-types'
 import {connect} from 'react-redux'
 import {Provider} from 'react-redux'
-
-// Moved component to its own file
 import VisibleTodoList from './components/VisibleTodoList'
 
 const initialState = Map();
@@ -24,10 +22,15 @@ const Footer = () => {
     )
 }
 
-// AddTodo only uses dispatch
-// So we define it using 'let' and override it
-// with connect later
 let nextId = 0
+const addTodo = (text) => {
+    return {
+        type: 'ADD_TODO',
+        text: text,
+        id: nextId++
+    }
+}
+
 let AddTodo = ({dispatch}) => {
     let input;
     return (
@@ -37,11 +40,7 @@ let AddTodo = ({dispatch}) => {
             }} />
             <button
                 onClick={() => {
-                    dispatch({
-                        type: 'ADD_TODO',
-                        text: input.value,
-                        id: nextId++
-                    });
+                    dispatch(addTodo(input.value));
                     input.value = '';
                 }}
             >Add todo
@@ -49,27 +48,9 @@ let AddTodo = ({dispatch}) => {
         </div>
     )
 }
-/*
-AddTodo = connect(
-    state => {
-        return {}  // connect will not pass any state
-    },
-    dispatch => {
-        return {dispatch} // connect will pass dispatch as is
-    }
-)(AddTodo)  // Wrap the old AddTodo component to create new
-
-// I can do the above thing using a shortcut
-AddTodo = connect(
-    null,
-    dispatch => {return {dispatch}} 
-){AddTodo}
-*/
-// I can do the above with a further shortcut
 AddTodo = connect()(AddTodo);
-// This doesn't subscribe to the store and injects dispatch
 
-/**************** FilterLink component rearchiteture ********/
+
 const Link = ({
     active,
     onLinkClick,
@@ -89,9 +70,16 @@ const Link = ({
     )
 }
 
+const setVisibilityFilter = (filter) => {
+    return {
+        type: 'SET_VISIBILITY_FILTER',
+        filter: filter
+    }
+}
+
 const mapStateToLinkProps = (
     state,
-    ownProps        // Container components props
+    ownProps
 ) => {
     return {
         active: state.get('visibilityFilter') === ownProps.filter
@@ -104,10 +92,7 @@ const mapDispatchToLinkProps = (
 ) => {
     return {
         onLinkClick: () => {
-            dispatch({
-                type: 'SET_VISIBILITY_FILTER',
-                filter: ownProps.filter
-            })
+            dispatch(setVisibilityFilter(ownProps.filter))
         }
     }
 }
