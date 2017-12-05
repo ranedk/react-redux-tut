@@ -249,3 +249,43 @@ const s5 = s4.add('clojure')
 console.log(">", s5.toString());
 // > Set { "python", "java", "clojure" }
 ```
+
+
+## React-Redux folder structure
+
+### Priciples:
+* All configs at the base folder
+* Common utils and components at parent levels
+* Projects are completely independent entities
+* Apps are parts of project with logic level separation
+* Apps to only have routes and components, logic in project level reducers
+* All actions for a project in one place
+
+
+#### Structure
+
+- root
+    - node_modules
+    - webpack.config.js
+    - webpack.config.production.js
+    - dist
+    - common
+        - utils
+        - components
+        - middleware
+    - types
+    - route.js
+    - projects
+        - *project*
+            - components
+            - store
+            - reducers
+            - middleware.js
+            - actions 
+            - route.js
+            - constants.js
+            - string.json
+            - apps
+                - *app*
+                    - route.js
+                    - components

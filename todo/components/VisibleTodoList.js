@@ -55,29 +55,23 @@ const getVisibleTodos = (
     }
 }
 
-const toggleTodo = (id) => {
-    return {
-        type: 'TOGGLE_TODO',
-        id: id
-    }
-}
+const toggleTodo = (id) => ({
+    type: 'TOGGLE_TODO',
+    id: id
+})
 
-const mapStateToProps = (state) => {
-    return {
-        todos: getVisibleTodos(
-            state.get('todos'),
-            state.get('visibilityFilter')
-        )
-    }
-}
+const mapStateToProps = (state) => ({
+    todos: getVisibleTodos(
+        state.get('todos'),
+        state.get('visibilityFilter')
+    )
+})
 
-const mapDispathToProps = (dispatch) => {
-    return {
-        onTodoClick: (id) => {
-            dispatch(toggleTodo(id));
-        }
+const mapDispathToProps = (dispatch) => ({
+    onTodoClick: (id) => {
+        dispatch(toggleTodo(id));
     }
-}
+})
 
 const VisibleTodoList = connect(
     mapStateToProps,
