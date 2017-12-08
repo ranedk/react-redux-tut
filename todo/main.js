@@ -1,6 +1,6 @@
 import { createStore } from 'redux'
 import todoApp from './reducers/todo'
-import {List, Map} from 'immutable'
+import {List, Map, fromJS} from 'immutable'
 
 import React from 'react'
 import {Component} from 'react'
@@ -10,7 +10,15 @@ import {connect} from 'react-redux'
 import {Provider} from 'react-redux'
 import VisibleTodoList from './components/VisibleTodoList'
 
-const initialState = Map();
+let nextId = 0
+const initialState = fromJS({
+    todos: [{
+        id: 0,
+        text: "Initial todo pre-loaded",
+        completed: false
+    }]
+});
+nextId = 1
 
 const Footer = () => {
     return (
@@ -22,7 +30,6 @@ const Footer = () => {
     )
 }
 
-let nextId = 0
 const addTodo = (text) => {
     return {
         type: 'ADD_TODO',
