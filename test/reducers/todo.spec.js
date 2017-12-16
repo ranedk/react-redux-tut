@@ -1,4 +1,4 @@
-import {todos} from 'reducers/todo'
+import todos from 'reducers/todos'
 import {Map, List, fromJS} from 'immutable'
 
 describe('addTodo', () => {

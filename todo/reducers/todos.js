@@ -1,5 +1,4 @@
-import { Map, List, isImmutable} from 'immutable'
-import { combineReducers } from 'redux-immutable'
+import {Map, List} from 'immutable'
 
 const todo = (state, action) => {
     switch(action.type) {
@@ -15,7 +14,7 @@ const todo = (state, action) => {
     }
 }
 
-export const todos = (state = List([]), action) => {
+const todos = (state = List([]), action) => {
     switch(action.type) {
 
         case 'ADD_TODO':
@@ -37,18 +36,4 @@ export const todos = (state = List([]), action) => {
     }
 }
 
-const visibilityFilter = (state='SHOW_ALL', action) => {
-    switch(action.type) {
-        case 'SET_VISIBILITY_FILTER':
-            return action.filter
-        default:
-            return state
-    }
-}
-
-const todoApp = combineReducers({
-    todos: todos,
-    visibilityFilter: visibilityFilter
-}) 
-
-export default todoApp
+export default todos;
